@@ -1,0 +1,33 @@
+services:
+  hugo:
+    container_name: hugo
+    image: hugomods/hugo:exts-non-root
+    restart: unless-stopped
+    # The ports configuration is optional, if you want to test locally
+    # Traefik will be able to reverse proxy the container without exposing
+    # the ports
+    # ports:
+    #   - "1313:1313"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.hugo.rule=Host(`thecuc.pu.carnet.hr`)"
+      - "traefik.http.routers.hugo.entrypoints=web"
+      - "traefik.http.routers.hugo.middlewares=redirect-to-https@docker"
+      - "traefik.http.routers.hugo-secure.rule=Host(`thecuc.pu.carnet.hr`)"
+      - "traefik.http.routers.hugo-secure.entrypoints=websecure"
+      - "traefik.http.routers.hugo-secure.tls.certresolver=dnsresolver"
+      - "traefik.http.services.hugo.loadbalancer.server.port=1313"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+    volumes:
+      - ./site:/src
+    command: server -D --buildDrafts --buildFuture --bind 0.0.0.0
+    environment:
+      - HUGO_THEME=hextra
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

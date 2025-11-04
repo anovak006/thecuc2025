@@ -1,0 +1,4 @@
+theme = 'hextra'
+baseURL = 'https://thecuc.pu.carnet.hr/'
+languageCode = 'en-us'
+title = 'The CUC 2025 Site'
