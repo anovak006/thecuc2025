@@ -111,3 +111,7 @@ traefik/letsencrypt/
 
 # Exclude DNS config
 dns/config/
+
+# Exclude Freeradius configuration with sensitive data
+freeradius/raddb/clients-local.conf
+freeradius/raddb/proxy-eduroam.conf
