@@ -1,0 +1,11 @@
+linelog f-ticks_aai {
+       filename = syslog
+       #syslog_facility = local0
+       #syslog_severity = info
+       format = ""
+       reference = "f_ticks.%{%{reply:Packet-Type}:-format}"
+       f_ticks {
+              Access-Accept = "F-TICKS/AAI-IDP/1.0#SRCRAD=%{Packet-Src-IP-Address}#FRPROXY=%{FreeRadius-Proxied-To}#REALM=%{Realm}#AUTHTYPE=%{control:Auth-Type}#VISINST=%{Operator-Name}#CUI=%{%{reply:Chargeable-User-Identity}:-%{Chargeable-User-Identity}}#CSI=%{Calling-Station-Id}#RESULT=OK#"
+              Access-Reject = "F-TICKS/AAI-IDP/1.0#SRCRAD=%{Packet-Src-IP-Address}#FRPROXY=%{FreeRadius-Proxied-To}#REALM=%{Realm}#AUTHTYPE=%{control:Auth-Type}#VISINST=%{Operator-Name}#CSI=%{Calling-Station-Id}#RESULT=FAIL#"
+       }
+}

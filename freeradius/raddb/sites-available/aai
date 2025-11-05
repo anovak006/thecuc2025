@@ -1,0 +1,132 @@
+server default {
+
+	listen {
+		type = auth
+
+		ipaddr = *
+	
+		port = 0
+
+		limit {
+		      max_connections = 32
+
+		      lifetime = 0
+
+		      idle_timeout = 30
+		}
+	}
+
+	listen {
+		type = acct
+
+		ipaddr = *
+
+		port = 0
+
+		limit {
+		}
+	}
+
+	authorize {
+		preprocess
+
+		suffix
+
+		eap-aai {
+			ok = return
+		}
+
+		cui-aai
+	}
+
+
+	authenticate {
+		eap-aai
+	}
+
+
+	preacct {
+	}
+
+	accounting {
+		detail
+	}
+
+
+	session {
+	}
+
+
+	post-auth {
+
+        	cui-aai
+
+	        if(control:Auth-Type != "eap-aai"){
+        	  f-ticks_aai
+	        }
+
+        	reply_log
+
+	        Post-Auth-Type REJECT {
+          
+        	  attr_filter.access_reject
+
+	          if(control:Auth-Type != "eap-aai"){
+	            f-ticks_aai
+        	  }
+
+	          reply_log
+
+	        }
+
+	}
+
+	pre-proxy {
+		pre_proxy_log
+
+		# AAI@EduHr stuff
+		update proxy-request {
+		       Operator-Name := $ENV{OPERATOR_NAME}
+		}
+		cui-aai
+	}
+
+	post-proxy {
+		post_proxy_log
+
+		eap-aai
+	}
+
+
+	$INCLUDE ${confdir}/clients-aai.conf
+	$INCLUDE ${confdir}/clients-local.conf
+
+}
+
+proxy server {
+	default_fallback = no
+
+}
+
+realm LOCAL {
+	type		= radius
+	authhost	= LOCAL
+	accthost	= LOCAL
+}
+
+realm NULL {
+	type		= radius
+	authhost	= LOCAL
+	accthost	= LOCAL
+}
+
+
+realm pu.carnet.hr {
+	type		= radius
+	authhost	= LOCAL
+	accthost	= LOCAL
+}
+
+# eduroam configuration
+$INCLUDE  ${confdir}/proxy-eduroam.conf
+

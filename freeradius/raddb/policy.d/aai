@@ -1,0 +1,52 @@
+cui_hash_key = "AAI@EduHr-7EAYoAtEvEFaxJ9Lm0Dn"
+
+cui_require_operator_name = 1
+
+cui-aai.authorize {
+	update request {
+		Chargeable-User-Identity:='\\000'
+	}
+}
+
+cui-aai.pre-proxy {
+	if ("%{Packet-Type}" == Access-Request ) {
+		update proxy-request {
+			Chargeable-User-Identity = '\\000'
+		}
+	}
+}
+
+cui-aai.post-auth {
+        if (!&control:Proxy-To-Realm && &Chargeable-User-Identity && !&reply:Chargeable-User-Identity && \
+            (&Operator-Name || ('${policy.cui_require_operator_name}' != 'yes')) ) {
+                update reply {
+                        &Chargeable-User-Identity = "%{sha1:${policy.cui_hash_key}%{tolower:%{User-Name}%{%{Operator-Name}:-}}}"
+                }
+        }
+
+        if (&reply:Chargeable-User-Identity) {
+                update {
+                        &reply:User-Name := &request:User-Name
+                }
+                cui_log
+        }
+
+}
+
+cui.updatedb {
+	if (reply:Chargeable-User-Identity) {
+		cui
+	}
+}
+
+cui.accounting {
+	if (!Chargeable-User-Identity) {
+		update control {
+			Chargable-User-Identity := "%{cui: SELECT cui FROM cui WHERE clientipaddress = '%{Client-IP-Address}' AND callingstationid = '%{Calling-Station-Id}' AND username = '%{User-Name}'}"
+		}
+	}
+
+	if (Chargeable-User-Identity && (Chargeable-User-Identity != "")) {
+		cui
+	}
+}

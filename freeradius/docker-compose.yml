@@ -1,0 +1,22 @@
+services:
+  radius:
+    # image: gitlab.razus.carnet.hr:5050/carnet/freeradius-eduroam:3.2.3-alpine
+    container_name: radius
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      # target: udapi-dev
+      network: host
+    restart: unless-stopped
+    network_mode: host
+    # command: sleep infinity
+    ports:
+      - 1812:1812/udp
+      - 1813:1813/udp
+    environment:
+      - SUFFIX=${SUFFIX}
+      - REALM=${REALM}
+      - DOMAIN=${DOMAIN}
+      - OPERATOR_NAME=${OPERATOR_NAME}
+      - PASSWORD=${PASSWORD}
+      - TZ=Europe/Zagreb

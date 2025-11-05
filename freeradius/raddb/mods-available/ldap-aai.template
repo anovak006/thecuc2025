@@ -1,0 +1,77 @@
+ldap ldap-aai {
+	server = 'ldapi:///'
+
+        sasl {
+                mech = "EXTERNAL"
+        }
+
+	base_dn = $ENV{SUFFIX}
+
+	update {
+
+		reply:Connect-Info := 'hrEduPersonExpireDate'
+		reply:Class := 'hrEduPersonPersistentID'
+		reply:Configuration-Token := 'hrEduPersonPrimaryAffiliation'
+		reply:Callback-Number := 'hrEduPersonUniqueID'
+
+	}
+
+	edir_autz = yes
+
+	user {
+		base_dn = "${..base_dn}"
+
+		filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+
+	}
+
+	group {
+	}
+
+	profile {
+	}
+
+	client {
+	}
+
+	options {
+
+		chase_referrals = no
+		rebind = no
+
+		res_timeout = 20
+
+		srv_timelimit = 3
+
+		net_timeout = 1
+
+		idle = 60
+
+		probes = 3
+
+		interval = 3
+
+		# ldap_debug = 0x0028
+	}
+
+	tls {
+	}
+
+	pool {
+		start = ${thread[pool].start_servers}
+
+		min = ${thread[pool].min_spare_servers}
+
+		max = ${thread[pool].max_servers}
+
+		spare = ${thread[pool].max_spare_servers}
+
+		uses = 0
+
+		retry_delay = 30
+
+		lifetime = 0
+
+		idle_timeout = 60
+	}
+}

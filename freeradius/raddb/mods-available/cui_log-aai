@@ -1,0 +1,9 @@
+linelog cui_log {
+	filename = ${logdir}/cui.log
+        format = ""
+	reference = "cui_log.%{%{reply:Packet-Type}:-format}"
+	cui_log {
+		Access-Accept = '{"time": "%S", "organisation": "%{request:Realm}", "uid": "%{User-Name}", "csi": "%{Calling-Station-Id}", "nas": "%{Called-Station-Id}", "cui": "%{reply:Chargeable-User-Identity}", "oname": "%{Operator-Name}", "result": "OK"}'  
+		Access-Reject = '{"time": "%S", "organisation": "%{request:Realm}", "uid": "%{User-Name}", "csi": "%{Calling-Station-Id}", "nas": "%{Called-Station-Id}", "cui": "%{reply:Chargeable-User-Identity}", "oname": "%{Operator-Name}", "result": "FAIL"}' 
+        }
+}

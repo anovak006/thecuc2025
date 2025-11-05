@@ -1,0 +1,71 @@
+eap eap-aai {
+	default_eap_type = ttls
+
+	timer_expire     = 60
+
+	ignore_unknown_eap_types = no
+
+	cisco_accounting_username_bug = no
+
+	max_sessions = ${max_requests}
+
+	tls-config tls-common {
+		tls_min_version = "1.1"
+		tls_max_version = "1.2"
+
+		private_key_password = $ENV{PASSWORD}
+		# private_key_file = ${certdir}/fRcerts/private/server-key.pem
+		private_key_file = ${certdir}/server.pem
+
+		# certificate_file = ${certdir}/fRcerts/server-cert.pem
+		certificate_file = ${certdir}/server.pem
+
+		# dh_file = ${certdir}/dh
+
+		ca_path = ${cadir}
+		ca_file = ${cadir}/ca.pem
+
+		cipher_list = "DEFAULT"
+
+		ecdh_curve = "prime256v1"
+
+		cache {
+			enable = yes
+
+			lifetime = 24 # hours
+
+			max_entries = 255
+
+		}
+
+		verify {
+		}
+
+		ocsp {
+			enable = no
+
+		}
+	}
+
+	tls {
+		tls = tls-common
+
+	}
+
+
+	ttls {
+		tls = tls-common
+
+
+		default_eap_type = ttls
+
+		copy_request_to_tunnel = yes
+
+		use_tunneled_reply = yes
+ 
+		virtual_server = "default"
+
+	}
+
+
+}

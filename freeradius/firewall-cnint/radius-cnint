@@ -1,0 +1,16 @@
+#!/bin/sh
+# RADIUS
+
+if [ "$ENABLE_IPV4" = "yes" ]; then
+    iptables -A INPUT -p UDP --dport radius \
+             -m comment --comment "RADIUS" -j ACCEPT_CNINT
+    iptables -A INPUT -p UDP --dport radius-acct \
+             -m comment --comment "RADIUS-ACCT" -j ACCEPT_CNINT
+fi
+
+if [ "$ENABLE_IPV6" = "yes" ]; then
+    ip6tables -A INPUT -p UDP --dport radius \
+             -m comment --comment "RADIUS" -j ACCEPT_CNINT
+    ip6tables -A INPUT -p UDP --dport radius-acct \
+             -m comment --comment "RADIUS-ACCT" -j ACCEPT_CNINT
+fi
