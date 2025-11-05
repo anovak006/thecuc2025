@@ -105,3 +105,9 @@ backups/
 node_modules
 *.sqlite3
 .vscode/
+
+# Traefik generated certificates
+traefik/letsencrypt/
+
+# Exclude DNS config
+dns/config/
