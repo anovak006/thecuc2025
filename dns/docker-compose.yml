@@ -1,0 +1,33 @@
+services:
+  dns:
+    image: technitium/dns-server
+    container_name: dns
+    # Uncomment the ports if you want to expose DNS directly
+    # ports:
+    #   - "53:53/udp"
+    #   - "53:53/tcp"
+      # - "5380:5380" # web sučelje
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.dns.rule=Host(`dns-thecuc.pu.carnet.hr`)"
+      - "traefik.http.routers.dns.entrypoints=web"
+      - "traefik.http.routers.dns.middlewares=redirect-to-https@docker"
+      - "traefik.http.routers.dns-secure.rule=Host(`dns-thecuc.pu.carnet.hr`)"
+      - "traefik.http.routers.dns-secure.entrypoints=websecure"
+      - "traefik.http.routers.dns-secure.tls.certresolver=dnsresolver"
+      - "traefik.http.services.dns.loadbalancer.server.port=5380"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+    volumes:
+      - ./config:/etc/dns
+    restart: always
+    networks:
+      - dns
+      - proxy
+
+networks:
+  dns:
+    driver: bridge
+  proxy:
+    external: true
