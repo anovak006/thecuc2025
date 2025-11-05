@@ -1,0 +1,5 @@
+tcp:
+  serversTransports:
+    mailu-proxy-v2:
+      proxyProtocol:
+        version: 2

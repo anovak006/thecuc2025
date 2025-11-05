@@ -1,0 +1,109 @@
+name: traefik
+
+networks:
+  proxy:
+    external: true # Assumes 'proxy' network is created outside this compose file
+  mailu_default:
+    external: true
+
+services:
+  traefik:
+    image: traefik:v3.5
+    container_name: traefik
+    restart: unless-stopped
+    command:
+
+      - --log.level=DEBUG
+      - --accesslog=true
+
+      # --- EntryPoints (HTTP/S) ---
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # - --entrypoints.websecure.http.tls=true
+      # Redirect HTTP -> HTTPS
+      # - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      # - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # - --entrypoints.web.http.redirections.entrypoint.permanent=true
+
+      # --- Mail (TCP) ---
+      - --entrypoints.smtp.address=:25
+      # - --entrypoints.submission.address=:587
+      - --entrypoints.smtps.address=:465
+      - --entrypoints.imaps.address=:993
+      - --entrypoints.pop3s.address=:995
+      - --entrypoints.sieve.address=:4190
+
+      # --- RADIUS (UDP) ---
+      # - --entrypoints.radius.address=:1812/udp
+      # - --entrypoints.radius_acct.address=:1813/udp
+
+      # --- DNS (TCP+UDP) ---
+      # - --entrypoints.dns_tcp.address=:53
+      # - --entrypoints.dns_udp.address=:53/udp
+
+      # --- (opcionalno) Traefik dashboard ---
+      - --entrypoints.traefik.address=:8080
+      - --api.dashboard=true
+      - --api.insecure=true   # Nemoj u produkciji
+
+      # Providers
+      - --providers.docker=true
+      - --providers.docker.network=proxy
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.allowEmptyServices=true
+      - --providers.file.directory=/config/
+      - --providers.file.watch=true
+
+      # ACME/Let's Encrypt (za HTTPS)
+      - --certificatesresolvers.cnresolver.acme.tlschallenge=true
+      - --certificatesresolvers.cnresolver.acme.email=certmaster@pu.carnet.hr
+      - --certificatesresolvers.cnresolver.acme.storage=/letsencrypt/acme.json
+
+      # ACME/Let's Encrypt (za DNS-01)
+      - --certificatesresolvers.dnsresolver.acme.dnschallenge=true
+      - --certificatesresolvers.dnsresolver.acme.dnschallenge.provider=technitium
+      - --certificatesresolvers.dnsresolver.acme.email=certmaster@pu.carnet.hr  
+      - --certificatesresolvers.dnsresolver.acme.storage=/letsencrypt/acme-dns.json
+
+    environment:
+      - TZ=Europe/Zagreb
+      - TRAEFIK_LOG_LEVEL=INFO
+      # - TRAEFIK_LOG_LEVEL=DEBUG   # Nemoj u produkciji
+      - TECHNITIUM_SERVER_BASE_URL=${TECHNITIUM_SERVER_BASE_URL}
+      - TECHNITIUM_API_TOKEN=${TECHNITIUM_API_TOKEN}
+
+    ports:
+      # Web
+      - "80:80"
+      - "443:443"
+
+      # Mail
+      - "25:25"
+      # - "587:587"
+      - "465:465"
+      - "993:993"
+      - "995:995"
+      - "4190:4190"
+
+      # RADIUS
+      # - "1812:1812/udp"
+      # - "1813:1813/udp"
+
+      # DNS
+      # - "53:53/tcp"
+      # - "53:53/udp"
+
+      # Dashboard (opcionalno)
+      - "8080:8080"
+
+      # DNS web
+      - "5380:5380"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs:ro
+      - ./letsencrypt:/letsencrypt/
+      - ./config/:/config/
+    networks:
+      proxy:
+        ipv4_address: 172.18.2.254
